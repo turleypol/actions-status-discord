@@ -54,7 +54,7 @@ function getPayload(status: string, description: string, job: string): object {
     const { eventName, sha, ref, workflow, actor } = ctx
     const repoURL = `https://github.com/${owner}/${repo}`
     const workflowURL = `${repoURL}/commit/${sha}/checks`
-    const sha_short = s.substring(0,7)
+    const sha_short = sha.substring(0,7)
 
     let payload = {
         embeds: [{
