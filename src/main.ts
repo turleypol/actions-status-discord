@@ -29,6 +29,7 @@ async function run() {
         logError('No webhook endpoint is given', nofail)
         process.exit()
     }
+   // core.debug(`webhook: ${webhook}`)
     const status: string = core.getInput('status').toLowerCase()
     if (!(status in statusOpts)) {
         logError('Invalid status value', nofail)
@@ -38,14 +39,16 @@ async function run() {
     const job: string = core.getInput('job')
 
     try {
-        await axios.post(webhook, JSON.stringify(getPayload(status, description, job)),{
+        await axios.post(`${webhook}`, JSON.stringify(getPayload(status, description, job)),{
       headers: {
         'Content-Type': 'application/json',
         'X-GitHub-Event': process.env.GITHUB_EVENT_NAME,
       },
     },)
-    } catch (e) {
-        logError(e, nofail)
+    } catch (err) {
+  core.error(`Error :, ${err.response.status}, ${err.response.statusText}`);
+  core.error('Message :'+ (err.response ? JSON.stringify(err.response.data) : err.message));
+        logError(err, nofail)
     }
 }
 
@@ -60,13 +63,10 @@ function getPayload(status: string, description: string, job: string): object {
     const repoURL = `https://github.com/${owner}/${repo}`
     const workflowURL = `${repoURL}/commit/${sha}/checks`
     const sha_short = sha.substring(0,7)
-
     let payload = {
         embeds: [{
             title: statusOpts[status].status + (job ? `: ${job}` : ''),
             color: statusOpts[status].color,
-            description: description || null,
-            timestamp: (new Date()).toISOString(),
             fields: [
                 {
                     name: 'Commit',
@@ -75,7 +75,7 @@ function getPayload(status: string, description: string, job: string): object {
                 },
                 {
                     name: 'Ref',
-                    value: ref,
+                    value: ref ? ref : 'r',
                     inline: true
                 }
             ]
