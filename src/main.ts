@@ -38,7 +38,12 @@ async function run() {
     const job: string = core.getInput('job')
 
     try {
-        await axios.post(webhook, getPayload(status, description, job))
+        await axios.post(webhook, JSON.stringify(getPayload(status, description, job)),{
+      headers: {
+        'Content-Type': 'application/json',
+        'X-GitHub-Event': process.env.GITHUB_EVENT_NAME,
+      },
+    },)
     } catch (e) {
         logError(e, nofail)
     }
