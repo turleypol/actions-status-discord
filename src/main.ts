@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import axios from 'axios'
-
+const fs = require('fs')
 interface StatusOption {
     status: string
     color: number
@@ -37,7 +37,6 @@ async function run() {
     }
     const description: string = core.getInput('description')
     const job: string = core.getInput('job')
-
     try {
         await axios.post(`${webhook}`, JSON.stringify(getPayload(status, description, job)),{
       headers: {
@@ -63,11 +62,21 @@ function getPayload(status: string, description: string, job: string): object {
     const repoURL = `https://github.com/${owner}/${repo}`
     const workflowURL = `${repoURL}/commit/${sha}/checks`
     const sha_short = sha.substring(0,7)
+    let blame = ""
+    let blamea = ""
+    if (status=="failure")
+    {
+        const eventContent = fs.readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8')
+        const jsonevent = JSON.parse(eventContent)
+        blame = jsonevent['sender']['login']
+        blamea = jsonevent['sender']['avatar_url']
+    }
     let payload = {
         embeds: [{
             title: statusOpts[status].status + (job ? `: ${job}` : ''),
             description: `Commit: [${sha_short}](${repoURL}/commit/${sha})\nRef: ${ref}`,
             color: statusOpts[status].color,
+... blame && {footer:{'text':`Blame ${blame}!`, 'icon_url':blamea}}
         }],
         avatar_url: 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png',
         username: 'GitHub'
