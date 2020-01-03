@@ -29,7 +29,7 @@ async function run() {
         logError('No webhook endpoint is given', nofail)
         process.exit()
     }
-   // core.debug(`webhook: ${webhook}`)
+
     const status: string = core.getInput('status').toLowerCase()
     if (!(status in statusOpts)) {
         logError('Invalid status value', nofail)
@@ -46,8 +46,8 @@ async function run() {
       },
     },)
     } catch (err) {
-  core.error(`Error :, ${err.response.status}, ${err.response.statusText}`);
-  core.error('Message :'+ (err.response ? JSON.stringify(err.response.data) : err.message));
+        core.error(`Error :, ${err.response.status}, ${err.response.statusText}`);
+        core.error('Message :'+ (err.response ? JSON.stringify(err.response.data) : err.message));
         logError(err, nofail)
     }
 }
@@ -66,20 +66,11 @@ function getPayload(status: string, description: string, job: string): object {
     let payload = {
         embeds: [{
             title: statusOpts[status].status + (job ? `: ${job}` : ''),
+            description: `Commit: [${sha_short}](${repoURL}/commit/${sha})\nRef: ${ref}`,
             color: statusOpts[status].color,
-            fields: [
-                {
-                    name: 'Commit',
-                    value: `[${sha_short}](${repoURL}/commit/${sha})`,
-                    inline: true
-                },
-                {
-                    name: 'Ref',
-                    value: ref ? ref : 'r',
-                    inline: true
-                }
-            ]
-        }]
+        }],
+        avatar_url: 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png',
+        username: 'GitHub'
     }
 
     core.debug(`payload: ${JSON.stringify(payload)}`)
