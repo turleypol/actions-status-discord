@@ -64,17 +64,26 @@ function getPayload(status: string, description: string, job: string): object {
     const sha_short = sha.substring(0,7)
     let blame = ""
     let blamea = ""
+    const eventContent = fs.readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8')
+    const jsonevent = JSON.parse(eventContent)
     if (status=="failure")
     {
-        const eventContent = fs.readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8')
-        const jsonevent = JSON.parse(eventContent)
         blame = jsonevent['sender']['login']
         blamea = jsonevent['sender']['avatar_url']
     }
+    let commitmsg = ""
+    if (jsonevent['head_commit'])
+    {
+      if (jsonevent['head_commit']['message'])
+      {
+        commitmsg=jsonevent['head_commit']['message']
+      }
+    }
+
     let payload = {
         embeds: [{
             title: statusOpts[status].status + (job ? `: ${job}` : ''),
-            description: `Commit: [${sha_short}](${repoURL}/commit/${sha})\nRef: ${ref}`,
+            description: `Commit: [${sha_short}](${repoURL}/commit/${sha}) ${commitmsg}\nRef: ${ref}`,
             color: statusOpts[status].color,
 ... blame && {footer:{'text':`Blame ${blame}!`, 'icon_url':blamea}}
         }],
