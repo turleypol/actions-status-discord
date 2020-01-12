@@ -83,7 +83,7 @@ function getPayload(status: string, description: string, job: string): object {
     let payload = {
         embeds: [{
             title: statusOpts[status].status + (job ? `: ${job}` : ''),
-            description: `Commit: [${sha_short}](${repoURL}/commit/${sha}) ${commitmsg}\nRef: ${ref}`,
+            description: `Commit: [${sha_short}](${repoURL}/commit/${sha}) ${commitmsg}\nRef: ${ref}\n[Build](${workflowURL})`,
             color: statusOpts[status].color,
 ... blame && {footer:{'text':`Blame ${blame}!`, 'icon_url':blamea}}
         }],
