@@ -17,7 +17,7 @@ inputs:
     description: "Description included in message"
 
 runs:
-  using: 'node16'
+  using: 'node20'
   main: 'lib/main.js'
 
 branding:
